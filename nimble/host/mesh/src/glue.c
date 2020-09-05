@@ -763,6 +763,7 @@ bt_le_adv_start(const struct ble_gap_adv_params *param,
         }
     }
 
+    //调用gap 接口函数
     err = ble_gap_adv_start(g_mesh_addr_type, NULL, BLE_HS_FOREVER, param,
                             NULL, NULL);
     if (err) {

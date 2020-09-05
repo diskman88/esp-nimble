@@ -175,7 +175,7 @@ mesh_adv_thread(void *args)
 			bt_mesh_proxy_adv_stop();
 		}
 #else
-		ev = ble_npl_eventq_get(&adv_queue, BLE_NPL_TIME_FOREVER);
+		ev = ble_npl_eventq_get(&adv_queue, BLE_NPL_TIME_FOREVER); //一直等待广播消息队列，有消息，则取出发送，
 #endif
 
 		if (!ev || !ble_npl_event_get_arg(ev)) {
@@ -187,14 +187,14 @@ mesh_adv_thread(void *args)
 		/* busy == 0 means this was canceled */
 		if (BT_MESH_ADV(buf)->busy) {
 			BT_MESH_ADV(buf)->busy = 0;
-			adv_send(buf);
+			adv_send(buf); //广播
 		}
 
 		/* os_sched(NULL); */
 	}
 }
 
-void bt_mesh_adv_update(void)
+void bt_mesh_adv_update(void)  //发空消息?
 {
 	static struct ble_npl_event ev = { };
 

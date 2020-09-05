@@ -51,25 +51,26 @@ extern "C" {
 /** Abstraction that describes a Mesh Element */
 struct bt_mesh_elem {
 	/* Unicast Address. Set at runtime during provisioning. */
-	u16_t addr;
+	u16_t addr; //单播地址，每个element都有一个，且同一mesh网络中不重复，provisioning时被分配。
 
 	/* Location Descriptor (GATT Bluetooth Namespace Descriptors) */
 	const u16_t loc;
 
-	const u8_t model_count;
-	const u8_t vnd_model_count;
+	const u8_t model_count; //model数量
+	const u8_t vnd_model_count; //vnd model数量。
 
-	struct bt_mesh_model * const models;
-	struct bt_mesh_model * const vnd_models;
+	struct bt_mesh_model * const models; //指针，指向models结构数组首地址，models被应用程序初始化。
+	struct bt_mesh_model * const vnd_models; //指针，指向vnd models结构结构数组首地址，models被应用程序初始化。
 };
 
-/* Foundation Models */
+/* Foundation Models 内建的models，协议栈已实现其消息处理等操作*/
 #define BT_MESH_MODEL_ID_CFG_SRV                   0x0000
 #define BT_MESH_MODEL_ID_CFG_CLI                   0x0001
 #define BT_MESH_MODEL_ID_HEALTH_SRV                0x0002
 #define BT_MESH_MODEL_ID_HEALTH_CLI                0x0003
 
-/* Models from the Mesh Model Specification */
+/* Models from the Mesh Model Specification sig基于Mesh Model Specification定义好的的model，它
+	们的opcode都定义好了，但opcode对应的功能需用户自已实现。 */
 #define BT_MESH_MODEL_ID_GEN_ONOFF_SRV             0x1000
 #define BT_MESH_MODEL_ID_GEN_ONOFF_CLI             0x1001
 #define BT_MESH_MODEL_ID_GEN_LEVEL_SRV             0x1002
@@ -123,19 +124,19 @@ struct bt_mesh_elem {
 #define BT_MESH_MODEL_ID_LIGHT_LC_SETUPSRV         0x1310
 #define BT_MESH_MODEL_ID_LIGHT_LC_CLI              0x1311
 
-/** Message sending context. */
+/** Message sending context.消息发送内容 */
 struct bt_mesh_msg_ctx {
-	/** NetKey Index of the subnet to send the message on. */
-	u16_t net_idx;
+	/** NetKey Index of the subnet to send the message on.要发送消息的子网的netkey index */
+	u16_t net_idx; //因为有多个net key，需用net_idx选择。每个net_key对应一个子网?
 
 	/** AppKey Index to encrypt the message with. */
-	u16_t app_idx;
+	u16_t app_idx; //因为有多个app key，需用app_idx选择。
 
 	/** Remote address. */
-	u16_t addr;
+	u16_t addr; //消息发送目标地址
 
 	/** Destination address of a received message. Not used for sending. */
-	u16_t recv_dst;
+	u16_t recv_dst; //收到的消息定义的目标地址，这不会用来用于本消息发送
 
 	/** Received TTL value. Not used for sending. */
 	u8_t  recv_ttl:7;
@@ -149,12 +150,12 @@ struct bt_mesh_msg_ctx {
 
 struct bt_mesh_model_op {
 	/* OpCode encoded using the BT_MESH_MODEL_OP_* macros */
-	const u32_t  opcode;
+	const u32_t  opcode; //操作码，指示消息接收方要实现的操作，每个操作码都对应一个操作函数，用于实现应用程序期望的操作
 
 	/* Minimum required message length */
-	const size_t min_len;
+	const size_t min_len; //需要的最小的消息长度
 
-	/* Message handler for the opcode */
+	/* Message handler for the opcode 操作码对应的操作函数，需应用程序实现*/
 	void (*const func)(struct bt_mesh_model *model,
 			   struct bt_mesh_msg_ctx *ctx,
 			   struct os_mbuf *buf);
@@ -266,17 +267,17 @@ struct bt_mesh_model_op {
 /** Model publication context. */
 struct bt_mesh_model_pub {
 	/** The model the context belongs to. Initialized by the stack. */
-	struct bt_mesh_model *mod;
+	struct bt_mesh_model *mod; //本结构所属model。
 
-	u16_t addr;         /**< Publish Address. */
+	u16_t addr;         /**< Publish Address. 发布地址 */
 	u16_t key;          /**< Publish AppKey Index. */
 
-	u8_t  ttl;          /**< Publish Time to Live. */
-	u8_t  retransmit;   /**< Retransmit Count & Interval Steps. */
-	u8_t  period;       /**< Publish Period. */
+	u8_t  ttl;          /**< Publish Time to Live. 消息存活时间 */
+	u8_t  retransmit;   /**< Retransmit Count & Interval Steps. 重传次数*/
+	u8_t  period;       /**< Publish Period. 发布周期 */
 	u8_t  period_div:4, /**< Divisor for the Period. */
-	      cred:1,       /**< Friendship Credentials Flag. */
-	      count:3;      /**< Retransmissions left. */
+	      cred:1,       /**< Friendship Credentials Flag. 友元证书标记 */
+	      count:3;      /**< Retransmissions left. 剩余重传次数 */
 
 	u32_t period_start; /**< Start of the current period. */
 
@@ -319,6 +320,7 @@ struct bt_mesh_model_pub {
 
 /** Abstraction that describes a Mesh Model instance */
 struct bt_mesh_model {
+	/* model id。sig定义了一系列model，并对它们做了编号，注意，模型区分srv和cli两种不同的角色。*/
 	union {
 		const u16_t id;
 		struct {
@@ -328,28 +330,29 @@ struct bt_mesh_model {
 	};
 
 	/* Internal information, mainly for persistent storage */
-	u8_t  elem_idx;   /* Belongs to Nth element */
-	u8_t  mod_idx;    /* Is the Nth model in the element */
-	u16_t flags;      /* Information about what has changed */
+	u8_t  elem_idx;   /* Belongs to Nth element 属于第n个element */
+	u8_t  mod_idx;    /* Is the Nth model in the element element的第n个model */
+	u16_t flags;      /* Information about what has changed 一些标记，用来记录一些改变 */
 
 	/* Model Publication */
 	struct bt_mesh_model_pub * const pub;
 
 	/* AppKey List */
-	u16_t keys[CONFIG_BT_MESH_MODEL_KEY_COUNT];
+	u16_t keys[CONFIG_BT_MESH_MODEL_KEY_COUNT]; //可由分配器配置，或应用程序写好。
 
 	/* Subscription List (group or virtual addresses) */
-	u16_t groups[CONFIG_BT_MESH_MODEL_GROUP_COUNT];
+	u16_t groups[CONFIG_BT_MESH_MODEL_GROUP_COUNT]; //可由分配器配置，或应用程序写好。
 
-	const struct bt_mesh_model_op * const op;
+	const struct bt_mesh_model_op * const op; //模型的操作码数组，定义了model能实现的功能。
 
 	/* Model-specific user data */
-	void *user_data;
+	void *user_data; //模型的用户数据，应用程序定义。
 };
 
+/* 定义消息发送回调函数数 */
 struct bt_mesh_send_cb {
-	void (*start)(u16_t duration, int err, void *cb_data);
-	void (*end)(int err, void *cb_data);
+	void (*start)(u16_t duration, int err, void *cb_data); //发送开始
+	void (*end)(int err, void *cb_data); //结束
 };
 
 void bt_mesh_model_msg_init(struct os_mbuf *msg, u32_t opcode);
@@ -386,6 +389,9 @@ int bt_mesh_model_send(struct bt_mesh_model *model,
  * non-period publishing. For periodic publishing the app only needs
  * to make sure that @ref bt_mesh_model_pub.msg contains a valid message
  * whenever the @ref bt_mesh_model_pub.update callback is called.
+ * 在调用这个函数以前，用户需确保准备好要发送的消息（bt_mesh_model_pub.msg中有内容）
+ * 此函数只用于非周期性发布。对于周期性发布，用户确保bt_mesh_model_pub.update被调用时，
+ * bt_mesh_model_pub.msg有消息，
  *
  * @param model  Mesh (client) Model that's publishing the message.
  *
@@ -402,13 +408,13 @@ int bt_mesh_model_publish(struct bt_mesh_model *model);
  */
 struct bt_mesh_elem *bt_mesh_model_elem(struct bt_mesh_model *mod);
 
-/** Node Composition */
+/** Node Composition node结构，此结构描述了一个node，设备没加入mesh网络前叫device,加入后叫node */
 struct bt_mesh_comp {
 	u16_t cid;
 	u16_t pid;
 	u16_t vid;
 
-	size_t elem_count;
+	size_t elem_count;   //element数量，最少要一个
 	struct bt_mesh_elem *elem;
 };
 

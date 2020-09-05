@@ -21,7 +21,7 @@
 
 
 #include "syscfg/syscfg.h"
-
+#define MYNEWT_VAL_BLE_STORE_CONFIG_PERSIST 1
 #if MYNEWT_VAL(BLE_STORE_CONFIG_PERSIST)
 
 #include <string.h>

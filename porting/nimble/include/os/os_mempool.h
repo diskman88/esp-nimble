@@ -56,17 +56,17 @@ struct os_memblock {
  */
 struct os_mempool {
     /** Size of the memory blocks, in bytes. */
-    uint32_t mp_block_size;
+    uint32_t mp_block_size; //单块大小
     /** The number of memory blocks. */
-    uint16_t mp_num_blocks;
+    uint16_t mp_num_blocks; //块数量
     /** The number of free blocks left */
-    uint16_t mp_num_free;
+    uint16_t mp_num_free; //剩余空闲块
     /** The lowest number of free blocks seen */
-    uint16_t mp_min_free;
+    uint16_t mp_min_free; //最小剩余空闲块
     /** Bitmap of OS_MEMPOOL_F_[...] values. */
     uint8_t mp_flags;
     /** Address of memory buffer used by pool */
-    uintptr_t mp_membuf_addr;
+    uintptr_t mp_membuf_addr; //内存池首地址。
     STAILQ_ENTRY(os_mempool) mp_list;
     SLIST_HEAD(,os_memblock);
     /** Name for memory block */

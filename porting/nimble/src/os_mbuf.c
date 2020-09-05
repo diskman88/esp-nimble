@@ -169,7 +169,7 @@ os_msys_get(uint16_t dsize, uint16_t leadingspace)
     struct os_mbuf *m;
     struct os_mbuf_pool *pool;
 
-    pool = _os_msys_find_pool(dsize);
+    pool = _os_msys_find_pool(dsize);  //查找内存池，寻找可用内存。
     if (!pool) {
         goto err;
     }
@@ -365,24 +365,24 @@ os_mbuf_append(struct os_mbuf *om, const void *data,  uint16_t len)
 
     omp = om->om_omp;
 
-    /* Scroll to last mbuf in the chain */
+    /* Scroll to last mbuf in the chain 滚动到mbuf链表尾，并赋给last*/
     last = om;
     while (SLIST_NEXT(last, om_next) != NULL) {
         last = SLIST_NEXT(last, om_next);
     }
 
     remainder = len;
-    space = OS_MBUF_TRAILINGSPACE(last);
+    space = OS_MBUF_TRAILINGSPACE(last); //获取last中空闲区大小
 
     /* If room in current mbuf, copy the first part of the data into the
      * remaining space in that mbuf.
      */
-    if (space > 0) {
-        if (space > remainder) {
+    if (space > 0) { //有剩余空间
+        if (space > remainder) { //够空间保存
             space = remainder;
         }
 
-        memcpy(OS_MBUF_DATA(last, uint8_t *) + last->om_len , data, space);
+        memcpy(OS_MBUF_DATA(last, uint8_t *) + last->om_len , data, space); //拷入os_mbuf的om_data指针指向空间
 
         last->om_len += space;
         data += space;

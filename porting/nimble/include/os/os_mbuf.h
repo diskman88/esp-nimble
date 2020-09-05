@@ -47,7 +47,7 @@ struct os_mbuf_pool {
      * Total length of the databuf in each mbuf.  This is the size of the
      * mempool block, minus the mbuf header
      */
-    uint16_t omp_databuf_len;
+    uint16_t omp_databuf_len; //每个mbuf的长度，为mem pool长度（除去mbuf header长）
     /**
      * The memory pool which to allocate mbufs out of
      */
@@ -64,7 +64,7 @@ struct os_mbuf_pkthdr {
     /**
      * Overall length of the packet.
      */
-    uint16_t omp_len;
+    uint16_t omp_len; //pack总长
     /**
      * Flags
      */
@@ -80,31 +80,31 @@ struct os_mbuf {
     /**
      * Current pointer to data in the structure
      */
-    uint8_t *om_data;
+    uint8_t *om_data; //就是om_databuf[0]地址
     /**
      * Flags associated with this buffer, see OS_MBUF_F_* defintions
      */
-    uint8_t om_flags;
+    uint8_t om_flags; //跟buffer相关联的一些标志
     /**
      * Length of packet header
      */
-    uint8_t om_pkthdr_len;
+    uint8_t om_pkthdr_len; //包头长度
     /**
      * Length of data in this buffer
      */
-    uint16_t om_len;
+    uint16_t om_len; //om_databuf[0]指向的buffer的数据长度
 
     /**
      * The mbuf pool this mbuf was allocated out of
      */
     struct os_mbuf_pool *om_omp;
 
-    SLIST_ENTRY(os_mbuf) om_next;
+    SLIST_ENTRY(os_mbuf) om_next; //形成链表
 
     /**
      * Pointer to the beginning of the data, after this buffer
      */
-    uint8_t om_databuf[0];
+    uint8_t om_databuf[0]; //相当于buffer指针，data buffer紧跟此结构。但只有第一个字节在此结构中。
 };
 
 /**
